@@ -1,16 +1,42 @@
-# This is a sample Python script.
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import pygame
 
-# Press Skift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# Start pygame
+pygame.init()
 
+# Set up screen
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# Window title
+pygame.display.set_caption("My Game")
 
+# Load images
+player_run_frames = []
+for i in range(6):
+    frame = pygame.image.load(f"PNG Sprites\\player_running\\tile00{i}.png").convert_alpha()
+    scaled_frame = pygame.transform.scale(frame, (frame.get_width() * 5, frame.get_height() * 5))
+    player_run_frames.append(scaled_frame)
+print(player_run_frames)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+counter = 0
+# Main game loop
+run = True
+while run:
+    counter += (1 * 0.005)
+    # update background
+    screen.fill((0, 0, 0))
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    # display images
+    screen.blit(player_run_frames[int(counter % 6)], (400, 300))
+
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+    pygame.display.update()
+
+    # Update game logic
