@@ -1,5 +1,6 @@
 import pygame
 import spritesheet
+from math import ceil
 
 pygame.init()
 
@@ -25,18 +26,20 @@ for i in range(1, 6):
 bg_width = bg_images[0].get_width()
 
 
-def draw_bg(scroll):
+def draw_bg(scroll, n):
     for x in range(5):
         speed = 1
         for i in bg_images:
-            screen.blit(i, ((x * bg_width) - scroll * speed, 0))
-            speed += 0.05
+            screen.blit(i, (n * (x * bg_width) - scroll * speed, 0))
+            speed += 0.2
 
 
-def draw_ground(scroll):
+def draw_ground(scroll, n):
     for x in range(15):
         screen.blit(ground_image, (n * (x * ground_width) - scroll * 4, SCREEN_HEIGHT - ground_height))
 
+
+tiles = ceil(SCREEN_WIDTH / bg_width) + 1
 
 
 ###################
@@ -192,13 +195,18 @@ def main():
         screen.fill(BG)
 
         #################
-        draw_bg(scroll)
-        draw_ground(scroll)
+        for tile in range(0, tiles):
+            draw_bg(scroll, tile)
+            draw_ground(scroll, tile)
+
         key = pygame.key.get_pressed()
-        if key[pygame.K_d] and scroll > 0:
-            scroll -= 2
-        if key[pygame.K_a] and scroll < 3000:
+        if key[pygame.K_d] and player.x_pos > 900:
             scroll += 2
+        # if key[pygame.K_a] and player.x_pos < 108:
+        # scroll -= 2
+
+        if abs(scroll) > bg_width:
+            scroll = 0
         ################
         # event handler
         for event in pygame.event.get():
