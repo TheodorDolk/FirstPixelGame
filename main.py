@@ -9,6 +9,38 @@ SCREEN_HEIGHT = 800
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('GAME')
 
+####################
+
+
+ground_image = pygame.image.load('PNG Sprites\\background_sprites\\ground.png').convert_alpha()
+ground_image = pygame.transform.scale_by(ground_image, 1.75)
+ground_width = ground_image.get_width()
+ground_height = ground_image.get_height()
+
+bg_images = []
+for i in range(1, 6):
+    bg_image = pygame.image.load(f"PNG Sprites\\background_sprites\\plx-{i}.png").convert_alpha()
+    bg_image = pygame.transform.scale_by(bg_image, 1.6)
+    bg_images.append(bg_image)
+bg_width = bg_images[0].get_width()
+
+
+def draw_bg(scroll):
+    for x in range(5):
+        speed = 1
+        for i in bg_images:
+            screen.blit(i, ((x * bg_width) - scroll * speed, 0))
+            speed += 0.05
+
+
+def draw_ground(scroll):
+    for x in range(15):
+        screen.blit(ground_image, ((x * ground_width) - scroll * 2.5, SCREEN_HEIGHT - ground_height))
+    print(SCREEN_HEIGHT - ground_height)
+
+
+###################
+
 
 class Player:
     def __init__(self):
@@ -73,6 +105,8 @@ class Player:
 
 
 def main():
+    FPS = 60
+    scroll = 0
     BG = (50, 50, 50)
     player = Player()
     run_game = True
@@ -85,10 +119,15 @@ def main():
         # update background
         screen.fill(BG)
 
-        # update animation
-
-        # show frame image
-
+        #################
+        draw_bg(scroll)
+        draw_ground(scroll)
+        key = pygame.key.get_pressed()
+        if key[pygame.K_d] and scroll > 0:
+            scroll -= 2
+        if key[pygame.K_a] and scroll < 3000:
+            scroll += 2
+        ################
         # event handler
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
