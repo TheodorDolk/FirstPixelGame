@@ -57,15 +57,9 @@ class Enemy:
         self.height = 48 * self.scale
         self.mask = py.mask.from_surface(py.image.load('PNG Sprites\\enemy_sprites\\Biker_idle.png'))
         self.hurt = False
-        # run animation
-        # self.run_frame = 0
-        # self.run_cooldown = 100
-        # self.run_last_update = py.time.get_ticks()
-        # self.run_frames = []
-        # enemy_run = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_run.png')
-        # enemy_run_sheet = spritesheet.SpriteSheet(enemy_run)
-        # for j in range(6):
-        #     self.run_frames.append(enemy_run_sheet.get_image(j, 48, 48, self.scale))
+        self.health = 100
+        self.alive = True
+        self.fully_dead = False
 
         # idle animation
         self.idle_frame = 0
@@ -77,48 +71,66 @@ class Enemy:
         for j in range(4):
             self.idle_frames.append(enemy_idle_sheet.get_image(j, 48, 48, self.scale))
 
-        # jump animation
-        # self.jump_frame = 0
-        # self.jump_cooldown = 400
-        # self.jump_last_update = py.time.get_ticks()
-        # self.jump_frames = []
-        # enemy_jump = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_jump.png')
-        # enemy_jump_sheet = spritesheet.SpriteSheet(enemy_jump)
-        # for j in range(4):
-        #     self.jump_frames.append(enemy_jump_sheet.get_image(j, 48, 48, self.scale))
+        # hurt animation
+        self.hurt_frame = 0
+        self.hurt_cooldown = 100
+        self.hurt_last_update = py.time.get_ticks()
+        self.hurt_frames = []
+        enemy_hurt = py.image.load('PNG Sprites\\enemy_sprites\\Biker_hurt.png')
+        enemy_hurt_sheet = spritesheet.SpriteSheet(enemy_hurt)
+        for j in range(2):
+            self.hurt_frames.append(enemy_hurt_sheet.get_image(j, 48, 48, self.scale))
 
-        # attack animation
-        # self.attack_frame = 0
-        # self.attack_cooldown = 80
-        # self.attack_last_update = py.time.get_ticks()
-        # self.attack_frames = []
-        # enemy_attack = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_attack3.png')
-        # enemy_attack_sheet = spritesheet.SpriteSheet(enemy_attack)
-        # for j in range(8):
-        #     self.attack_frames.append(enemy_attack_sheet.get_image(j, 48, 48, self.scale))
+        # death animation
+        self.death_frame = 0
+        self.death_cooldown = 150
+        self.death_last_update = py.time.get_ticks()
+        self.death_frames = []
+        enemy_death = py.image.load('PNG Sprites\\enemy_sprites\\Biker_death.png')
+        enemy_death_sheet = spritesheet.SpriteSheet(enemy_death)
+        for j in range(6):
+            self.death_frames.append(enemy_death_sheet.get_image(j, 48, 48, self.scale))
 
     def idle(self):
-        self.reset_frame("idle")
-        now = py.time.get_ticks()
-        if now - self.idle_last_update >= self.idle_cooldown:
-            self.idle_frame += 1
-            self.idle_last_update = now
-            if self.idle_frame >= len(self.idle_frames):
-                self.idle_frame = 0
-        if self.direction == "right":
-            if self.hurt:
-                screen.blit(self.idle_frames[self.idle_frame], (self.x_pos, self.y_pos))
-            else:
-                screen.blit(self.idle_frames[self.idle_frame], (self.x_pos, self.y_pos))
-            self.mask = py.mask.from_surface(self.idle_frames[self.idle_frame])
-        elif self.direction == "left":
-            screen.blit(py.transform.flip(self.idle_frames[self.idle_frame], True, False),
-                        (self.x_pos - 48, self.y_pos))
-            self.mask = py.mask.from_surface(py.transform.flip(self.idle_frames[self.idle_frame], True, False))
+        if self.alive:
+            now = py.time.get_ticks()
+            if now - self.idle_last_update >= self.idle_cooldown:
+                self.idle_frame += 1
+                self.idle_last_update = now
+                if self.idle_frame >= len(self.idle_frames):
+                    self.idle_frame = 0
+            if self.direction == "right":
+                frame = self.idle_frames[self.idle_frame]
+                if self.hurt:
+                    frame = self.hurt_frames[self.hurt_frame]
+                    if now - self.hurt_last_update >= self.hurt_cooldown:
+                        self.hurt_frame += 1
+                        self.hurt_last_update = now
+                        if self.hurt_frame >= len(self.hurt_frames):
+                            self.hurt_frame = 0
+                    self.health -= 1
+                self.mask = py.mask.from_surface(self.idle_frames[self.idle_frame])
+                screen.blit(frame, (self.x_pos, self.y_pos))
+            elif self.direction == "left":
+                frame = py.transform.flip(self.idle_frames[self.idle_frame], True, False)
+                screen.blit(frame, (self.x_pos - 48, self.y_pos))
+                self.mask = py.mask.from_surface(py.transform.flip(self.idle_frames[self.idle_frame], True, False))
 
-    def reset_frame(self, animation):
-        if animation == 'idle':
-            pass
+    def die(self):
+        now = py.time.get_ticks()
+        if now - self.death_last_update >= self.death_cooldown and not self.fully_dead:
+            self.death_frame += 1
+            self.death_last_update = now
+            if self.death_frame >= len(self.death_frames):
+                self.death_frame = 5
+                self.fully_dead = True
+        if self.direction == "right":
+            frame = self.death_frames[self.death_frame]
+            screen.blit(frame, (self.x_pos, self.y_pos))
+        elif self.direction == "left":
+            frame = py.transform.flip(self.death_frames[self.death_frame], True, False)
+            screen.blit(frame, (self.x_pos - 48, self.y_pos))
+
 
 
 class Player:
@@ -132,7 +144,6 @@ class Player:
         self.width = 48 * self.scale
         self.height = 48 * self.scale
         self.mask = None
-
 
         # run animation
         self.run_frame = 0
@@ -220,8 +231,8 @@ class Player:
             screen.blit(frame, (self.x_pos, self.y_pos))
         elif self.direction == "left":
             frame = py.transform.flip(self.idle_frames[self.idle_frame], True, False)
-            screen.blit(frame, (self.x_pos - 48, self.y_pos))
             self.mask = py.mask.from_surface(frame)
+            screen.blit(frame, (self.x_pos - 48, self.y_pos))
 
     def jump(self):
         self.reset_frame("jump")
@@ -248,12 +259,13 @@ class Player:
             if self.attack_frame >= len(self.attack_frames):
                 self.attack_frame = 0
         if self.direction == "right":
-            screen.blit(self.attack_frames[self.attack_frame], (self.x_pos, self.y_pos))
-            self.mask = py.mask.from_surface(self.attack_frames[self.attack_frame])
+            frame = self.attack_frames[self.attack_frame]
+            screen.blit(frame, (self.x_pos, self.y_pos))
+            self.mask = py.mask.from_surface(frame)
         elif self.direction == "left":
-            screen.blit(py.transform.flip(self.attack_frames[self.attack_frame], True, False),
-                        (self.x_pos - 48, self.y_pos))
-            self.mask = py.mask.from_surface(py.transform.flip(self.attack_frames[self.attack_frame], True, False))
+            frame = py.transform.flip(self.attack_frames[self.attack_frame], True, False)
+            screen.blit(frame, (self.x_pos - 48, self.y_pos))
+            self.mask = py.mask.from_surface(frame)
 
 
 def play():
@@ -276,6 +288,7 @@ def play():
     attacking = False
 
     clock = py.time.Clock()
+
     while run_game:
         clock.tick(FPS)
         # update background
@@ -348,25 +361,30 @@ def play():
             player.idle()
 
         # collision detection using masks
-        offset = (player.x_pos - enemy.x_pos, player.y_pos - enemy.y_pos)
-        if player.mask.overlap(enemy.mask, offset):
+        if player.direction == "right":
+            offset = (player.x_pos - enemy.x_pos + 48, player.y_pos - enemy.y_pos)
+        else:
+            offset = (player.x_pos - enemy.x_pos + 96, player.y_pos - enemy.y_pos)  # 144 is 3x the width of the player
+        if player.mask.overlap(enemy.mask, offset) and attacking:
             enemy.hurt = True
-            print("collision")
         else:
             enemy.hurt = False
 
-        image = enemy.mask.to_surface()
-        image.set_colorkey((0, 0, 0))
-        screen.blit(image, (enemy.x_pos, enemy.y_pos))
-
-        player_image = player.mask.to_surface()
-        player_image.set_colorkey((0, 0, 0))
-        screen.blit(player_image, (player.x_pos, player.y_pos))
+        # text with enemy health
+        enemy_health = get_font(30).render(f"Enemy Health: {enemy.health}", True, "Black")
+        enemy_health_rect = enemy_health.get_rect(center=(640, 50))
+        screen.blit(enemy_health, enemy_health_rect)
+        if enemy.health <= 0:
+            enemy.health = 0
+            enemy.alive = False
+            enemy.die()
         py.display.flip()
     py.quit()
 
+
 def get_font(size):  # Returns Press-Start-2P in the desired size
     return py.font.Font("assets/font.ttf", size)
+
 
 def options():
     while True:
