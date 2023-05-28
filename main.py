@@ -1,6 +1,8 @@
+import sys
 import pygame as py
 import spritesheet
 from math import ceil
+from button import Button
 
 py.init()
 
@@ -9,7 +11,7 @@ SCREEN_HEIGHT = 800
 
 screen = py.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 py.display.set_caption('GAME')
-
+BG = py.image.load("assets/Background.png")
 ####################
 
 
@@ -254,7 +256,7 @@ class Player:
             self.mask = py.mask.from_surface(py.transform.flip(self.attack_frames[self.attack_frame], True, False))
 
 
-def main():
+def play():
     FPS = 60
     scroll = 0  # acts as a variable to track where the player is in the world
     BG = (50, 50, 50)
@@ -363,6 +365,73 @@ def main():
         py.display.flip()
     py.quit()
 
+def get_font(size):  # Returns Press-Start-2P in the desired size
+    return py.font.Font("assets/font.ttf", size)
+
+def options():
+    while True:
+        OPTIONS_MOUSE_POS = py.mouse.get_pos()
+
+        screen.fill("white")
+
+        OPTIONS_TEXT = get_font(45).render("This is the OPTIONS screen.", True, "Black")
+        OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(640, 260))
+        screen.blit(OPTIONS_TEXT, OPTIONS_RECT)
+
+        OPTIONS_BACK = Button(image=None, pos=(640, 460),
+                              text_input="BACK", font=get_font(75), base_color="Black", hovering_color="Green")
+
+        OPTIONS_BACK.changeColor(OPTIONS_MOUSE_POS)
+        OPTIONS_BACK.update(screen)
+
+        for event in py.event.get():
+            if event.type == py.QUIT:
+                py.quit()
+                sys.exit()
+            if event.type == py.MOUSEBUTTONDOWN:
+                if OPTIONS_BACK.checkForInput(OPTIONS_MOUSE_POS):
+                    main_menu()
+
+        py.display.update()
+
+
+def main_menu():
+    while True:
+        screen.blit(BG, (0, 0))
+
+        MENU_MOUSE_POS = py.mouse.get_pos()
+
+        MENU_TEXT = get_font(100).render("MAIN MENU", True, "#b68f40")
+        MENU_RECT = MENU_TEXT.get_rect(center=(640, 100))
+
+        PLAY_BUTTON = Button(image=py.image.load("assets/Play Rect.png"), pos=(640, 250),
+                             text_input="PLAY", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+        OPTIONS_BUTTON = Button(image=py.image.load("assets/Options Rect.png"), pos=(640, 400),
+                                text_input="OPTIONS", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+        QUIT_BUTTON = Button(image=py.image.load("assets/Quit Rect.png"), pos=(640, 550),
+                             text_input="QUIT", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+
+        screen.blit(MENU_TEXT, MENU_RECT)
+
+        for button in [PLAY_BUTTON, OPTIONS_BUTTON, QUIT_BUTTON]:
+            button.changeColor(MENU_MOUSE_POS)
+            button.update(screen)
+
+        for event in py.event.get():
+            if event.type == py.QUIT:
+                py.quit()
+                sys.exit()
+            if event.type == py.MOUSEBUTTONDOWN:
+                if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    play()
+                if OPTIONS_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    options()
+                if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    py.quit()
+                    sys.exit()
+
+        py.display.update()
+
 
 if __name__ == '__main__':
-    main()
+    main_menu()
