@@ -1,5 +1,6 @@
 import sys
 import pygame as py
+
 import spritesheet
 from math import ceil
 from button import Button
@@ -11,9 +12,6 @@ SCREEN_HEIGHT = 800
 
 screen = py.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 py.display.set_caption('GAME')
-BG = py.image.load("assets/Background.png")
-####################
-
 
 ground_image = py.image.load('PNG Sprites\\background_sprites\\ground.png').convert_alpha()
 ground_image = py.transform.scale_by(ground_image, 1.75)
@@ -21,11 +19,14 @@ ground_width = ground_image.get_width()
 ground_height = ground_image.get_height()
 
 bg_images = []
+
 for i in range(1, 6):
     bg_image = py.image.load(f"PNG Sprites\\background_sprites\\plx-{i}.png").convert_alpha()
     bg_image = py.transform.scale_by(bg_image, 1.6)
     bg_images.append(bg_image)
 bg_width = bg_images[0].get_width()
+
+tiles = ceil(SCREEN_WIDTH / bg_width) + 1
 
 
 def draw_bg(scroll, n):
@@ -40,11 +41,6 @@ def draw_ground(scroll, n):
     for x in range(15):
         screen.blit(ground_image, (n * (x * ground_width) - scroll * 4, SCREEN_HEIGHT - ground_height))
 
-
-tiles = ceil(SCREEN_WIDTH / bg_width) + 1
-
-
-###################
 
 class Enemy:
     def __init__(self):
@@ -414,25 +410,53 @@ def options():
 
 
 def main_menu():
+    main_menu_clock = py.time.Clock()
+    main_menu_fps = 60
+    bg = py.image.load("assets/Background.png").convert()
+    main_menu_bg_width = bg.get_width()
+    main_menu_bg_rect = bg.get_rect()
+    main_menu_bg_scroll = 0
+    main_menu_tiles = ceil(SCREEN_WIDTH / main_menu_bg_width) + 1
+
     while True:
-        screen.blit(BG, (0, 0))
+        main_menu_clock.tick(main_menu_fps)
+        # draw scrolling background
+        for tile in range(0, main_menu_tiles):
+            screen.blit(bg, (tile * main_menu_bg_width + main_menu_bg_scroll, 0))
+            main_menu_bg_rect.x = tile * bg_width + main_menu_bg_scroll
+            # py.draw.rect(screen, (255, 0, 0), main_menu_bg_rect, 1)
 
-        MENU_MOUSE_POS = py.mouse.get_pos()
+        # scroll background
+        main_menu_bg_scroll -= 5
+        # reset scroll
+        if abs(main_menu_bg_scroll) > main_menu_bg_width:
+            main_menu_bg_scroll = 0
 
-        MENU_TEXT = get_font(100).render("MAIN MENU", True, "#b68f40")
-        MENU_RECT = MENU_TEXT.get_rect(center=(640, 100))
+        menu_mouse_pos = py.mouse.get_pos()
+        game_text_img = py.image.load("assets/game_text.png")
+        screen.blit(game_text_img, (
+        SCREEN_WIDTH / 2 - game_text_img.get_width() / 2, SCREEN_HEIGHT / 2 - game_text_img.get_height() / 2 - 180))
 
-        PLAY_BUTTON = Button(image=py.image.load("assets/Play Rect.png"), pos=(640, 250),
-                             text_input="PLAY", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
-        OPTIONS_BUTTON = Button(image=py.image.load("assets/Options Rect.png"), pos=(640, 400),
-                                text_input="OPTIONS", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
-        QUIT_BUTTON = Button(image=py.image.load("assets/Quit Rect.png"), pos=(640, 550),
-                             text_input="QUIT", font=get_font(75), base_color="#d7fcd4", hovering_color="White")
+        play_image = py.image.load("assets/play_button.png")
+        play_image = py.transform.scale_by(play_image, 0.7)
 
-        screen.blit(MENU_TEXT, MENU_RECT)
+        PLAY_BUTTON = Button(image=play_image, pos=(SCREEN_WIDTH / 2, 400),
+                             text_input="", font=get_font(25), base_color="#b36b07", hovering_color="Yellow")
+
+        options_image = py.image.load("assets/settings_button.png")
+        options_image = py.transform.scale_by(options_image, 0.7)
+
+        OPTIONS_BUTTON = Button(image=options_image, pos=(SCREEN_WIDTH / 2, 550),
+                                text_input="", font=get_font(25), base_color="#b36b07", hovering_color="Yellow")
+
+        quit_image = py.image.load("assets/quit_button.png")
+        quit_image = py.transform.scale_by(quit_image, 0.7)
+
+        QUIT_BUTTON = Button(image=quit_image, pos=(SCREEN_WIDTH / 2, 700),
+                             text_input="", font=get_font(25), base_color="#b36b07", hovering_color="Yellow")
 
         for button in [PLAY_BUTTON, OPTIONS_BUTTON, QUIT_BUTTON]:
-            button.changeColor(MENU_MOUSE_POS)
+            button.changeColor(menu_mouse_pos)
             button.update(screen)
 
         for event in py.event.get():
@@ -440,11 +464,11 @@ def main_menu():
                 py.quit()
                 sys.exit()
             if event.type == py.MOUSEBUTTONDOWN:
-                if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
+                if PLAY_BUTTON.checkForInput(menu_mouse_pos):
                     play()
-                if OPTIONS_BUTTON.checkForInput(MENU_MOUSE_POS):
+                if OPTIONS_BUTTON.checkForInput(menu_mouse_pos):
                     options()
-                if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+                if QUIT_BUTTON.checkForInput(menu_mouse_pos):
                     py.quit()
                     sys.exit()
 
