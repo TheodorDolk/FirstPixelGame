@@ -53,6 +53,7 @@ class Enemy:
         self.direction = 'right'
         self.width = 48 * self.scale
         self.height = 48 * self.scale
+        self.mask = py.mask.from_surface(py.image.load('PNG Sprites\\enemy_sprites\\Biker_idle.png'))
 
         # run animation
         # self.run_frame = 0
@@ -74,6 +75,15 @@ class Enemy:
         for j in range(4):
             self.idle_frames.append(enemy_idle_sheet.get_image(j, 48, 48, self.scale))
 
+        # hurt animation
+        self.hurt_frame = 0
+        self.idle_cooldown = 150
+        self.idle_last_update = py.time.get_ticks()
+        self.idle_frames = []
+        enemy_idle = py.image.load('PNG Sprites\\enemy_sprites\\Biker_hurt.png')
+        enemy_idle_sheet = spritesheet.SpriteSheet(enemy_idle)
+        for j in range(2):
+            self.idle_frames.append(enemy_idle_sheet.get_image(j, 48, 48, self.scale))
         # jump animation
         # self.jump_frame = 0
         # self.jump_cooldown = 400
@@ -104,9 +114,11 @@ class Enemy:
                 self.idle_frame = 0
         if self.direction == "right":
             screen.blit(self.idle_frames[self.idle_frame], (self.x_pos, self.y_pos))
+            self.mask = py.mask.from_surface(self.idle_frames[self.idle_frame])
         elif self.direction == "left":
             screen.blit(py.transform.flip(self.idle_frames[self.idle_frame], True, False),
                         (self.x_pos - 48, self.y_pos))
+            self.mask = py.mask.from_surface(py.transform.flip(self.idle_frames[self.idle_frame], True, False))
 
     def reset_frame(self, animation):
         if animation == 'idle':
@@ -123,16 +135,19 @@ class Player:
         self.direction = 'right'
         self.width = 48 * self.scale
         self.height = 48 * self.scale
+        self.mask = py.mask.from_surface(py.image.load('PNG Sprites\\player_sprites\\Cyborg_idle.png'))
 
         # run animation
         self.run_frame = 0
         self.run_cooldown = 100
         self.run_last_update = py.time.get_ticks()
         self.run_frames = []
+        self.run_masks = []
         player_run = py.image.load('PNG Sprites\\player_sprites\\Cyborg_run.png')
         player_run_sheet = spritesheet.SpriteSheet(player_run)
         for j in range(6):
             self.run_frames.append(player_run_sheet.get_image(j, 48, 48, self.scale))
+            self.run_masks.append(py.mask.from_surface(self.run_frames[j]))
 
         # idle animation
         self.idle_frame = 0
@@ -236,9 +251,11 @@ class Player:
                 self.attack_frame = 0
         if self.direction == "right":
             screen.blit(self.attack_frames[self.attack_frame], (self.x_pos, self.y_pos))
+            self.mask = py.mask.from_surface(self.attack_frames[self.attack_frame])
         elif self.direction == "left":
             screen.blit(py.transform.flip(self.attack_frames[self.attack_frame], True, False),
                         (self.x_pos - 48, self.y_pos))
+            self.mask = py.mask.from_surface(py.transform.flip(self.attack_frames[self.attack_frame], True, False))
 
 
 def main():
@@ -261,7 +278,6 @@ def main():
     attacking = False
 
     clock = py.time.Clock()
-    print(player.y_pos)
     while run_game:
         clock.tick(FPS)
         # update background
@@ -333,9 +349,19 @@ def main():
         elif not jumping and not attacking:
             player.idle()
 
+        # collision detection using masks
+        offset = (player.x_pos - enemy.x_pos, player.y_pos - enemy.y_pos)
+        if player.mask.overlap(enemy.mask, offset):
+            print("collision")
 
+        image = enemy.mask.to_surface()
+        image.set_colorkey((0, 0, 0))
+        screen.blit(image, (enemy.x_pos, enemy.y_pos))
+
+        player_image = player.mask.to_surface()
+        player_image.set_colorkey((0, 0, 0))
+        screen.blit(player_image, (player.x_pos, player.y_pos))
         py.display.flip()
-
     py.quit()
 
 
