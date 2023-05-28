@@ -1,45 +1,42 @@
-import pygame as py
+import pygame
 import spritesheet
 from math import ceil
 
-py.init()
+pygame.init()
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
 
-screen = py.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-py.display.set_caption('GAME')
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption('GAME')
 
 ####################
 
 
-ground_image = py.image.load('PNG Sprites\\background_sprites\\ground.png').convert_alpha()
-ground_image = py.transform.scale_by(ground_image, 1.75)
+ground_image = pygame.image.load('PNG Sprites\\background_sprites\\ground.png').convert_alpha()
+ground_image = pygame.transform.scale_by(ground_image, 1.75)
 ground_width = ground_image.get_width()
 ground_height = ground_image.get_height()
 
 bg_images = []
 for i in range(1, 6):
-    bg_image = py.image.load(f"PNG Sprites\\background_sprites\\plx-{i}.png").convert_alpha()
-    bg_image = py.transform.scale_by(bg_image, 1.6)
+    bg_image = pygame.image.load(f"PNG Sprites\\background_sprites\\plx-{i}.png").convert_alpha()
+    bg_image = pygame.transform.scale_by(bg_image, 1.6)
     bg_images.append(bg_image)
 bg_width = bg_images[0].get_width()
 
 
-def draw_bg(scroll, n):
+def draw_bg(scroll):
     for x in range(5):
         speed = 1
         for i in bg_images:
-            screen.blit(i, (n * (x * bg_width) - scroll * speed, 0))
+            screen.blit(i, ((x * bg_width) - scroll * speed, 0))
             speed += 0.2
 
 
-def draw_ground(scroll, n):
+def draw_ground(scroll):
     for x in range(15):
-        screen.blit(ground_image, (n * (x * ground_width) - scroll * 4, SCREEN_HEIGHT - ground_height))
-
-
-tiles = ceil(SCREEN_WIDTH / bg_width) + 1
+        screen.blit(ground_image, ((x * ground_width) - scroll * 4, SCREEN_HEIGHT - ground_height))
 
 
 ###################
@@ -57,9 +54,9 @@ class Enemy:
         # run animation
         self.run_frame = 0
         self.run_cooldown = 100
-        self.run_last_update = py.time.get_ticks()
+        self.run_last_update = pygame.time.get_ticks()
         self.run_frames = []
-        enemy_run = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_run.png')
+        enemy_run = pygame.image.load('PNG Sprites\\enemy_sprites\\Cyborg_run.png')
         enemy_run_sheet = spritesheet.SpriteSheet(enemy_run)
         for j in range(6):
             self.run_frames.append(enemy_run_sheet.get_image(j, 48, 48, self.scale))
@@ -67,9 +64,9 @@ class Enemy:
         # idle animation
         self.idle_frame = 0
         self.idle_cooldown = 150
-        self.idle_last_update = py.time.get_ticks()
+        self.idle_last_update = pygame.time.get_ticks()
         self.idle_frames = []
-        enemy_idle = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_idle.png')
+        enemy_idle = pygame.image.load('PNG Sprites\\enemy_sprites\\Cyborg_idle.png')
         enemy_idle_sheet = spritesheet.SpriteSheet(enemy_idle)
         for j in range(4):
             self.idle_frames.append(enemy_idle_sheet.get_image(j, 48, 48, self.scale))
@@ -77,9 +74,9 @@ class Enemy:
         # jump animation
         self.jump_frame = 0
         self.jump_cooldown = 400
-        self.jump_last_update = py.time.get_ticks()
+        self.jump_last_update = pygame.time.get_ticks()
         self.jump_frames = []
-        enemy_jump = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_jump.png')
+        enemy_jump = pygame.image.load('PNG Sprites\\enemy_sprites\\Cyborg_jump.png')
         enemy_jump_sheet = spritesheet.SpriteSheet(enemy_jump)
         for j in range(4):
             self.jump_frames.append(enemy_jump_sheet.get_image(j, 48, 48, self.scale))
@@ -87,9 +84,9 @@ class Enemy:
         # attack animation
         self.attack_frame = 0
         self.attack_cooldown = 80
-        self.attack_last_update = py.time.get_ticks()
+        self.attack_last_update = pygame.time.get_ticks()
         self.attack_frames = []
-        enemy_attack = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_attack3.png')
+        enemy_attack = pygame.image.load('PNG Sprites\\enemy_sprites\\Cyborg_attack3.png')
         enemy_attack_sheet = spritesheet.SpriteSheet(enemy_attack)
         for j in range(8):
             self.attack_frames.append(enemy_attack_sheet.get_image(j, 48, 48, self.scale))
@@ -100,7 +97,6 @@ class Enemy:
 
 class Player:
     def __init__(self):
-        self.punch_sound = py.mixer.Sound('MP3 Sounds\\short_punch.mp3')
         self.ground_height = (SCREEN_HEIGHT - ground_height) * 0.75
         self.x_pos = 600
         self.y_pos = self.ground_height
@@ -112,9 +108,9 @@ class Player:
         # run animation
         self.run_frame = 0
         self.run_cooldown = 100
-        self.run_last_update = py.time.get_ticks()
+        self.run_last_update = pygame.time.get_ticks()
         self.run_frames = []
-        player_run = py.image.load('PNG Sprites\\player_sprites\\Cyborg_run.png')
+        player_run = pygame.image.load('PNG Sprites\\player_sprites\\Cyborg_run.png')
         player_run_sheet = spritesheet.SpriteSheet(player_run)
         for j in range(6):
             self.run_frames.append(player_run_sheet.get_image(j, 48, 48, self.scale))
@@ -122,9 +118,9 @@ class Player:
         # idle animation
         self.idle_frame = 0
         self.idle_cooldown = 150
-        self.idle_last_update = py.time.get_ticks()
+        self.idle_last_update = pygame.time.get_ticks()
         self.idle_frames = []
-        player_idle = py.image.load('PNG Sprites\\player_sprites\\Cyborg_idle.png')
+        player_idle = pygame.image.load('PNG Sprites\\player_sprites\\Cyborg_idle.png')
         player_idle_sheet = spritesheet.SpriteSheet(player_idle)
         for j in range(4):
             self.idle_frames.append(player_idle_sheet.get_image(j, 48, 48, self.scale))
@@ -132,9 +128,9 @@ class Player:
         # jump animation
         self.jump_frame = 0
         self.jump_cooldown = 400
-        self.jump_last_update = py.time.get_ticks()
+        self.jump_last_update = pygame.time.get_ticks()
         self.jump_frames = []
-        player_jump = py.image.load('PNG Sprites\\player_sprites\\Cyborg_jump.png')
+        player_jump = pygame.image.load('PNG Sprites\\player_sprites\\Cyborg_jump.png')
         player_jump_sheet = spritesheet.SpriteSheet(player_jump)
         for j in range(4):
             self.jump_frames.append(player_jump_sheet.get_image(j, 48, 48, self.scale))
@@ -142,9 +138,9 @@ class Player:
         # attack animation
         self.attack_frame = 0
         self.attack_cooldown = 80
-        self.attack_last_update = py.time.get_ticks()
+        self.attack_last_update = pygame.time.get_ticks()
         self.attack_frames = []
-        player_attack = py.image.load('PNG Sprites\\player_sprites\\Cyborg_attack3.png')
+        player_attack = pygame.image.load('PNG Sprites\\player_sprites\\Cyborg_attack3.png')
         player_attack_sheet = spritesheet.SpriteSheet(player_attack)
         for j in range(8):
             self.attack_frames.append(player_attack_sheet.get_image(j, 48, 48, self.scale))
@@ -169,7 +165,7 @@ class Player:
 
     def run(self):
         self.reset_frame("run")
-        now = py.time.get_ticks()
+        now = pygame.time.get_ticks()
         if now - self.run_last_update >= self.run_cooldown:
             self.run_frame += 1
             self.run_last_update = now
@@ -178,12 +174,12 @@ class Player:
         if self.direction == "right":
             screen.blit(self.run_frames[self.run_frame], (self.x_pos, self.y_pos))
         elif self.direction == "left":
-            screen.blit(py.transform.flip(self.run_frames[self.run_frame], True, False),
+            screen.blit(pygame.transform.flip(self.run_frames[self.run_frame], True, False),
                         (self.x_pos - 48, self.y_pos))
 
     def idle(self):
         self.reset_frame("idle")
-        now = py.time.get_ticks()
+        now = pygame.time.get_ticks()
         if now - self.idle_last_update >= self.idle_cooldown:
             self.idle_frame += 1
             self.idle_last_update = now
@@ -192,12 +188,12 @@ class Player:
         if self.direction == "right":
             screen.blit(self.idle_frames[self.idle_frame], (self.x_pos, self.y_pos))
         elif self.direction == "left":
-            screen.blit(py.transform.flip(self.idle_frames[self.idle_frame], True, False),
+            screen.blit(pygame.transform.flip(self.idle_frames[self.idle_frame], True, False),
                         (self.x_pos - 48, self.y_pos))
 
     def jump(self):
         self.reset_frame("jump")
-        now = py.time.get_ticks()
+        now = pygame.time.get_ticks()
         if now - self.jump_last_update >= self.jump_cooldown:
             self.jump_frame += 1
             self.jump_last_update = now
@@ -206,23 +202,21 @@ class Player:
         if self.direction == "right":
             screen.blit(self.jump_frames[self.jump_frame], (self.x_pos, self.y_pos))
         elif self.direction == "left":
-            screen.blit(py.transform.flip(self.jump_frames[self.jump_frame], True, False),
+            screen.blit(pygame.transform.flip(self.jump_frames[self.jump_frame], True, False),
                         (self.x_pos - 48, self.y_pos))
 
     def attack(self):
         self.reset_frame("attack")
-        now = py.time.get_ticks()
+        now = pygame.time.get_ticks()
         if now - self.attack_last_update >= self.attack_cooldown:
             self.attack_frame += 1
-            if self.attack_frame == 5 or self.attack_frame == 7:
-                py.mixer.Sound.play(self.punch_sound)
             self.attack_last_update = now
             if self.attack_frame >= len(self.attack_frames):
                 self.attack_frame = 0
         if self.direction == "right":
             screen.blit(self.attack_frames[self.attack_frame], (self.x_pos, self.y_pos))
         elif self.direction == "left":
-            screen.blit(py.transform.flip(self.attack_frames[self.attack_frame], True, False),
+            screen.blit(pygame.transform.flip(self.attack_frames[self.attack_frame], True, False),
                         (self.x_pos - 48, self.y_pos))
 
 
@@ -243,48 +237,48 @@ def main():
 
     attacking = False
 
-    clock = py.time.Clock()
-    print(player.y_pos)
+    clock = pygame.time.Clock()
     while run_game:
         clock.tick(FPS)
         # update background
         screen.fill(BG)
 
         #################
-        for tile in range(0, tiles):
-            draw_bg(scroll, tile)
-            draw_ground(scroll, tile)
+        draw_bg(scroll)
+        draw_ground(scroll)
 
-        key = py.key.get_pressed()
-        if key[py.K_d] and player.x_pos > 900:
+        print(scroll)
+
+        key = pygame.key.get_pressed()
+        if key[pygame.K_d] and player.x_pos > 900:
             scroll += 2
 
         if scroll > bg_width:
             scroll = 0
         ################
         # event handler
-        for event in py.event.get():
-            if event.type == py.QUIT:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 run_game = False
-            if event.type == py.KEYDOWN:
-                if event.key == py.K_d:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_d:
                     run_right = True
-            if event.type == py.KEYUP:
-                if event.key == py.K_d:
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_d:
                     run_right = False
-            if event.type == py.KEYDOWN:
-                if event.key == py.K_a:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
                     run_left = True
-            if event.type == py.KEYUP:
-                if event.key == py.K_a:
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_a:
                     run_left = False
-            if event.type == py.KEYDOWN:
-                if event.key == py.K_SPACE:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
                     jumping = True
-            if event.type == py.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     attacking = True
-            if event.type == py.MOUSEBUTTONUP:
+            if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
                     attacking = False
         if attacking and not jumping and not run_left and not run_right:
@@ -315,9 +309,9 @@ def main():
         elif not jumping and not attacking:
             player.idle()
 
-        py.display.flip()
+        pygame.display.flip()
 
-    py.quit()
+    pygame.quit()
 
 
 if __name__ == '__main__':
