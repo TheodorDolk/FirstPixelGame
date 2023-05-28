@@ -1,4 +1,4 @@
-import pygame
+import pygame as py
 import spritesheet
 from math import ceil
 
@@ -44,9 +44,63 @@ tiles = ceil(SCREEN_WIDTH / bg_width) + 1
 
 ###################
 
+class Enemy:
+    def __init__(self):
+        self.ground_height = (SCREEN_HEIGHT - ground_height) * 0.75
+        self.x_pos = 600
+        self.y_pos = self.ground_height
+        self.scale = 4
+        self.direction = 'right'
+        self.width = 48 * self.scale
+        self.height = 48 * self.scale
+
+        # run animation
+        self.run_frame = 0
+        self.run_cooldown = 100
+        self.run_last_update = py.time.get_ticks()
+        self.run_frames = []
+        enemy_run = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_run.png')
+        enemy_run_sheet = spritesheet.SpriteSheet(enemy_run)
+        for j in range(6):
+            self.run_frames.append(enemy_run_sheet.get_image(j, 48, 48, self.scale))
+
+        # idle animation
+        self.idle_frame = 0
+        self.idle_cooldown = 150
+        self.idle_last_update = py.time.get_ticks()
+        self.idle_frames = []
+        enemy_idle = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_idle.png')
+        enemy_idle_sheet = spritesheet.SpriteSheet(enemy_idle)
+        for j in range(4):
+            self.idle_frames.append(enemy_idle_sheet.get_image(j, 48, 48, self.scale))
+
+        # jump animation
+        self.jump_frame = 0
+        self.jump_cooldown = 400
+        self.jump_last_update = py.time.get_ticks()
+        self.jump_frames = []
+        enemy_jump = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_jump.png')
+        enemy_jump_sheet = spritesheet.SpriteSheet(enemy_jump)
+        for j in range(4):
+            self.jump_frames.append(enemy_jump_sheet.get_image(j, 48, 48, self.scale))
+
+        # attack animation
+        self.attack_frame = 0
+        self.attack_cooldown = 80
+        self.attack_last_update = py.time.get_ticks()
+        self.attack_frames = []
+        enemy_attack = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_attack3.png')
+        enemy_attack_sheet = spritesheet.SpriteSheet(enemy_attack)
+        for j in range(8):
+            self.attack_frames.append(enemy_attack_sheet.get_image(j, 48, 48, self.scale))
+
+    def reset_frame(self, animation):
+        if animation == 'idle':
+            pass
 
 class Player:
     def __init__(self):
+        self.punch_sound = py.mixer.Sound('MP3 Sounds\\short_punch.mp3')
         self.ground_height = (SCREEN_HEIGHT - ground_height) * 0.75
         self.x_pos = 600
         self.y_pos = self.ground_height
@@ -160,6 +214,8 @@ class Player:
         now = pygame.time.get_ticks()
         if now - self.attack_last_update >= self.attack_cooldown:
             self.attack_frame += 1
+            if self.attack_frame == 5 or self.attack_frame == 7:
+                py.mixer.Sound.play(self.punch_sound)
             self.attack_last_update = now
             if self.attack_frame >= len(self.attack_frames):
                 self.attack_frame = 0
@@ -233,7 +289,7 @@ def main():
             if event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
                     attacking = False
-        if attacking:
+        if attacking and not jumping and not run_left and not run_right:
             player.attack()
 
         if jumping:
