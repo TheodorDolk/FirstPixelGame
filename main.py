@@ -55,48 +55,63 @@ class Enemy:
         self.height = 48 * self.scale
 
         # run animation
-        self.run_frame = 0
-        self.run_cooldown = 100
-        self.run_last_update = py.time.get_ticks()
-        self.run_frames = []
-        enemy_run = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_run.png')
-        enemy_run_sheet = spritesheet.SpriteSheet(enemy_run)
-        for j in range(6):
-            self.run_frames.append(enemy_run_sheet.get_image(j, 48, 48, self.scale))
+        # self.run_frame = 0
+        # self.run_cooldown = 100
+        # self.run_last_update = py.time.get_ticks()
+        # self.run_frames = []
+        # enemy_run = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_run.png')
+        # enemy_run_sheet = spritesheet.SpriteSheet(enemy_run)
+        # for j in range(6):
+        #     self.run_frames.append(enemy_run_sheet.get_image(j, 48, 48, self.scale))
 
         # idle animation
         self.idle_frame = 0
         self.idle_cooldown = 150
         self.idle_last_update = py.time.get_ticks()
         self.idle_frames = []
-        enemy_idle = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_idle.png')
+        enemy_idle = py.image.load('PNG Sprites\\enemy_sprites\\Biker_idle.png')
         enemy_idle_sheet = spritesheet.SpriteSheet(enemy_idle)
         for j in range(4):
             self.idle_frames.append(enemy_idle_sheet.get_image(j, 48, 48, self.scale))
 
         # jump animation
-        self.jump_frame = 0
-        self.jump_cooldown = 400
-        self.jump_last_update = py.time.get_ticks()
-        self.jump_frames = []
-        enemy_jump = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_jump.png')
-        enemy_jump_sheet = spritesheet.SpriteSheet(enemy_jump)
-        for j in range(4):
-            self.jump_frames.append(enemy_jump_sheet.get_image(j, 48, 48, self.scale))
+        # self.jump_frame = 0
+        # self.jump_cooldown = 400
+        # self.jump_last_update = py.time.get_ticks()
+        # self.jump_frames = []
+        # enemy_jump = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_jump.png')
+        # enemy_jump_sheet = spritesheet.SpriteSheet(enemy_jump)
+        # for j in range(4):
+        #     self.jump_frames.append(enemy_jump_sheet.get_image(j, 48, 48, self.scale))
 
         # attack animation
-        self.attack_frame = 0
-        self.attack_cooldown = 80
-        self.attack_last_update = py.time.get_ticks()
-        self.attack_frames = []
-        enemy_attack = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_attack3.png')
-        enemy_attack_sheet = spritesheet.SpriteSheet(enemy_attack)
-        for j in range(8):
-            self.attack_frames.append(enemy_attack_sheet.get_image(j, 48, 48, self.scale))
+        # self.attack_frame = 0
+        # self.attack_cooldown = 80
+        # self.attack_last_update = py.time.get_ticks()
+        # self.attack_frames = []
+        # enemy_attack = py.image.load('PNG Sprites\\enemy_sprites\\Cyborg_attack3.png')
+        # enemy_attack_sheet = spritesheet.SpriteSheet(enemy_attack)
+        # for j in range(8):
+        #     self.attack_frames.append(enemy_attack_sheet.get_image(j, 48, 48, self.scale))
+
+    def idle(self):
+        self.reset_frame("idle")
+        now = py.time.get_ticks()
+        if now - self.idle_last_update >= self.idle_cooldown:
+            self.idle_frame += 1
+            self.idle_last_update = now
+            if self.idle_frame >= len(self.idle_frames):
+                self.idle_frame = 0
+        if self.direction == "right":
+            screen.blit(self.idle_frames[self.idle_frame], (self.x_pos, self.y_pos))
+        elif self.direction == "left":
+            screen.blit(py.transform.flip(self.idle_frames[self.idle_frame], True, False),
+                        (self.x_pos - 48, self.y_pos))
 
     def reset_frame(self, animation):
         if animation == 'idle':
             pass
+
 
 class Player:
     def __init__(self):
@@ -228,8 +243,10 @@ class Player:
 
 def main():
     FPS = 60
-    scroll = 0 # acts as a variable to track where the player is in the world
+    scroll = 0  # acts as a variable to track where the player is in the world
     BG = (50, 50, 50)
+
+    enemy = Enemy()
     player = Player()
     player_speed = 8
     run_game = True
@@ -262,6 +279,7 @@ def main():
         if scroll > bg_width:
             scroll = 0
         ################
+        enemy.idle()
         # event handler
         for event in py.event.get():
             if event.type == py.QUIT:
@@ -314,6 +332,7 @@ def main():
                 player.x_pos -= player_speed
         elif not jumping and not attacking:
             player.idle()
+
 
         py.display.flip()
 
