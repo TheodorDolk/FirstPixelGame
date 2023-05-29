@@ -141,7 +141,7 @@ class Player:
         self.height = 48 * self.scale
         self.mask = None
         self.projectiles = []
-        self.projectile_speed = 0
+        self.projectile_speed = 25
 
         # run animation
         self.run_frame = 0
@@ -272,6 +272,7 @@ class Player:
                 if projectile.x_pos < -100 or projectile.x_pos > 1300:
                     self.projectiles.remove(projectile)
                 projectile.update()
+        print(len(self.projectiles))
 
 
 projectile_frames = []
