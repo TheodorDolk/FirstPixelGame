@@ -139,6 +139,8 @@ class Player:
         self.width = 48 * self.scale
         self.height = 48 * self.scale
         self.mask = None
+        self.projectiles = []
+        self.projectile_speed = 0
 
         # run animation
         self.run_frame = 0
@@ -250,6 +252,7 @@ class Player:
             self.attack_frame += 1
             if self.attack_frame == 5 or self.attack_frame == 7:
                 py.mixer.Sound.play(self.punch_sound)
+                self.projectiles.append(Projectile(self.x_pos + 142, self.y_pos + 28, self.direction, self.projectile_speed))
             self.attack_last_update = now
             if self.attack_frame >= len(self.attack_frames):
                 self.attack_frame = 0
@@ -261,6 +264,43 @@ class Player:
             frame = py.transform.flip(self.attack_frames[self.attack_frame], True, False)
             screen.blit(frame, (self.x_pos - 48, self.y_pos))
             self.mask = py.mask.from_surface(frame)
+
+    def update_projectiles(self):
+        if self.projectiles:
+            for projectile in self.projectiles:
+                if projectile.x_pos < -100 or projectile.x_pos > 1300:
+                    self.projectiles.remove(projectile)
+                projectile.update()
+
+
+projectile_frames = []
+projectile = py.image.load('PNG Sprites\\player_sprites\\8_1.png')
+projectile_sheet = spritesheet.SpriteSheet(projectile)
+for j in range(6):
+    projectile_frames.append(projectile_sheet.get_image(j, 48, 48, 3))
+
+
+class Projectile:
+    def __init__(self, x, y, direction, speed):
+        self.x_pos = x
+        self.y_pos = y
+        self.direction = direction
+        self.projectile_frames = projectile_frames
+        self.projectile_last_update = 0
+        self.projectile_speed = speed
+        self.right_projectile_frame = self.projectile_frames[0]
+        self.left_projectile_frame = py.transform.flip(self.projectile_frames[0], True, False)
+        self.update()
+
+    def update(self):
+        if self.direction == "right":
+            screen.blit(self.right_projectile_frame, (self.x_pos, self.y_pos))
+            self.x_pos += self.projectile_speed
+            print("lol")
+        elif self.direction == "left":
+            screen.blit(self.left_projectile_frame, (self.x_pos - 284, self.y_pos))
+            self.x_pos -= self.projectile_speed
+            print("bajs")
 
 
 def play():
@@ -285,7 +325,6 @@ def play():
     y_velocity = jump_height
 
     attacking = False
-
     clock = py.time.Clock()
 
     while run_game:
@@ -335,7 +374,7 @@ def play():
                     attacking = False
         if attacking and not jumping and not run_left and not run_right:
             player.attack()
-
+        player.update_projectiles()
         if jumping:
             player.y_pos -= y_velocity
             y_velocity -= y_gravity
@@ -379,6 +418,7 @@ def play():
             enemy.health = 0
             enemy.alive = False
             enemy.die()
+
         py.display.flip()
     py.quit()
 
