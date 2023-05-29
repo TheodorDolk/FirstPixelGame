@@ -274,8 +274,11 @@ class Player:
             screen.blit(py.transform.flip(self.gun, True, False), (self.x_pos, self.y_pos + 96))
 
 def play():
+    py.mixer.music.load("MP3 Sounds/play_music.mp3")
+    py.mixer.music.play(-1)
     FPS = 60
-    scroll = 0  # acts as a variable to track where the player is in the world
+    scroll = 0  # acts as a variable to track background position
+    players_pos = 0  # acts as a variable to track player position
     BG = (50, 50, 50)
 
     enemy = Enemy()
@@ -306,10 +309,13 @@ def play():
 
         key = py.key.get_pressed()
         if key[py.K_d] and player.x_pos > 900:
+            players_pos += player_speed
             scroll += 2
 
         if scroll > bg_width:
             scroll = 0
+
+
         ################
         enemy.idle()
         # event handler
@@ -420,6 +426,8 @@ def options():
 
 
 def main_menu():
+    py.mixer.music.load("MP3 Sounds/main_menu.mp3")
+    py.mixer.music.play(-1)
     main_menu_clock = py.time.Clock()
     main_menu_fps = 60
     bg = py.image.load("assets/Background.png").convert()
