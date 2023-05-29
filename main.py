@@ -128,7 +128,6 @@ class Enemy:
             screen.blit(frame, (self.x_pos - 48, self.y_pos))
 
 
-
 class Player:
     def __init__(self):
         self.punch_sound = py.mixer.Sound('MP3 Sounds\\short_punch.mp3')
@@ -140,6 +139,11 @@ class Player:
         self.width = 48 * self.scale
         self.height = 48 * self.scale
         self.mask = None
+
+        # gun sprite
+        gun_sprite = py.image.load('PNG Sprites\\gun_sprites\\1_1.png')
+        gun_sprite = py.transform.scale(gun_sprite, (int(26 * self.scale), int(7 * self.scale)))
+        self.gun = gun_sprite
 
         # run animation
         self.run_frame = 0
@@ -263,6 +267,11 @@ class Player:
             screen.blit(frame, (self.x_pos - 48, self.y_pos))
             self.mask = py.mask.from_surface(frame)
 
+    def blit_gun(self):
+        if self.direction == "right":
+            screen.blit(self.gun, (self.x_pos + 48, self.y_pos + 96))
+        elif self.direction == "left":
+            screen.blit(py.transform.flip(self.gun, True, False), (self.x_pos, self.y_pos + 96))
 
 def play():
     FPS = 60
@@ -374,6 +383,7 @@ def play():
             enemy.health = 0
             enemy.alive = False
             enemy.die()
+        player.blit_gun()
         py.display.flip()
     py.quit()
 
@@ -435,7 +445,7 @@ def main_menu():
         menu_mouse_pos = py.mouse.get_pos()
         game_text_img = py.image.load("assets/game_text.png")
         screen.blit(game_text_img, (
-        SCREEN_WIDTH / 2 - game_text_img.get_width() / 2, SCREEN_HEIGHT / 2 - game_text_img.get_height() / 2 - 180))
+            SCREEN_WIDTH / 2 - game_text_img.get_width() / 2, SCREEN_HEIGHT / 2 - game_text_img.get_height() / 2 - 180))
 
         play_image = py.image.load("assets/play_button.png")
         play_image = py.transform.scale_by(play_image, 0.7)
