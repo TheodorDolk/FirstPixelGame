@@ -140,11 +140,6 @@ class Player:
         self.height = 48 * self.scale
         self.mask = None
 
-        # gun sprite
-        gun_sprite = py.image.load('PNG Sprites\\gun_sprites\\1_1.png')
-        gun_sprite = py.transform.scale(gun_sprite, (int(26 * self.scale), int(7 * self.scale)))
-        self.gun = gun_sprite
-
         # run animation
         self.run_frame = 0
         self.run_cooldown = 100
@@ -267,14 +262,10 @@ class Player:
             screen.blit(frame, (self.x_pos - 48, self.y_pos))
             self.mask = py.mask.from_surface(frame)
 
-    def blit_gun(self):
-        if self.direction == "right":
-            screen.blit(self.gun, (self.x_pos + 48, self.y_pos + 96))
-        elif self.direction == "left":
-            screen.blit(py.transform.flip(self.gun, True, False), (self.x_pos, self.y_pos + 96))
 
 def play():
     py.mixer.music.load("MP3 Sounds/play_music.mp3")
+    py.mixer.music.set_volume(0.15)
     py.mixer.music.play(-1)
     FPS = 60
     scroll = 0  # acts as a variable to track background position
@@ -314,7 +305,6 @@ def play():
 
         if scroll > bg_width:
             scroll = 0
-
 
         ################
         enemy.idle()
@@ -389,7 +379,6 @@ def play():
             enemy.health = 0
             enemy.alive = False
             enemy.die()
-        player.blit_gun()
         py.display.flip()
     py.quit()
 
@@ -427,6 +416,7 @@ def options():
 
 def main_menu():
     py.mixer.music.load("MP3 Sounds/main_menu.mp3")
+    py.mixer.music.set_volume(0.2)
     py.mixer.music.play(-1)
     main_menu_clock = py.time.Clock()
     main_menu_fps = 60
