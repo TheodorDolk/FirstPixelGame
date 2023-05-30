@@ -456,7 +456,7 @@ def options():
         py.display.update()
 
 
-def shop(coins, attack_speed_lvl):
+def shop(coins, attack_speed_lvl, health_lvl):
     while True:
         OPTIONS_MOUSE_POS = py.mouse.get_pos()
 
@@ -481,11 +481,34 @@ def shop(coins, attack_speed_lvl):
         OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(250, 150))
         screen.blit(OPTIONS_TEXT, OPTIONS_RECT)
 
+        # Health level
+        health_img = py.image.load("shop/health.webp")
+        health_img = py.transform.scale_by(health_img, 0.8)
+        health_btn = Button(image=health_img, pos=(700, 300),
+                                  text_input="", font=get_font(75), base_color="Black", hovering_color="Green")
+        health_btn.update(screen)
+
+        OPTIONS_TEXT = get_font(15).render(f"Current level: {health_lvl}", True, "Black")
+        OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(700, 450))
+        screen.blit(OPTIONS_TEXT, OPTIONS_RECT)
+
+        OPTIONS_TEXT = get_font(15).render(f"Upgrade max health: cost 5", True, "Red")
+        OPTIONS_RECT = OPTIONS_TEXT.get_rect(center=(750, 150))
+        screen.blit(OPTIONS_TEXT, OPTIONS_RECT)
 
         OPTIONS_BACK = Button(image=None, pos=(600, 750),
                               text_input="BACK", font=get_font(75), base_color="Black", hovering_color="Green")
         OPTIONS_BACK.changeColor(OPTIONS_MOUSE_POS)
         OPTIONS_BACK.update(screen)
+
+        # dump values into json file
+        with open("player_data/data.json", "r") as f:
+            player_data = json.load(f)
+
+        with open("player_data/data.json", "w") as f:
+            player_data["coins"] = coins
+            player_data["attack_speed_lvl"] = attack_speed_lvl
+            json.dump(player_data, f, indent=4)
 
         for event in py.event.get():
             if event.type == py.QUIT:
@@ -493,16 +516,7 @@ def shop(coins, attack_speed_lvl):
                 sys.exit()
             if event.type == py.MOUSEBUTTONDOWN:
                 if OPTIONS_BACK.checkForInput(OPTIONS_MOUSE_POS):
-                    # dump values into json file
-                    with open("player_data/data.json", "r") as f:
-                        player_data = json.load(f)
-
-                    with open("player_data/data.json", "w") as f:
-                        player_data["coins"] = coins
-                        player_data["attack_speed_lvl"] = attack_speed_lvl
-                        json.dump(player_data, f, indent=4)
-                    main_menu()
-
+                   main_menu()
                 if attack_s_upgrade.checkForInput(OPTIONS_MOUSE_POS):
                     if coins >= 10:
                         # play AS upgrade sound
@@ -511,6 +525,19 @@ def shop(coins, attack_speed_lvl):
                         coin_click_sound.play()
                         coins -= 10
                         attack_speed_lvl += 1
+                    else:
+                        # play error sound
+                        coin_click_sound = py.mixer.Sound("MP3 Sounds/upgrade_fail.wav")
+                        coin_click_sound.set_volume(1.5)
+                        coin_click_sound.play()
+                if health_btn.checkForInput(OPTIONS_MOUSE_POS):
+                    if coins >= 5:
+                        # play AS upgrade sound
+                        coin_click_sound = py.mixer.Sound("MP3 Sounds/AS_upgrade.wav")
+                        coin_click_sound.set_volume(1.5)
+                        coin_click_sound.play()
+                        coins -= 5
+                        health_lvl += 1
                     else:
                         # play error sound
                         coin_click_sound = py.mixer.Sound("MP3 Sounds/upgrade_fail.wav")
@@ -529,6 +556,8 @@ def main_menu():
         coins = player_data["coins"]
         # get attack speed level from json file
         attack_speed_lvl = player_data["attack_speed_lvl"]
+        # get health lvl from json file
+        health_lvl = player_data["health_lvl"]
 
     py.mixer.music.load("MP3 Sounds/main_menu.mp3")
     py.mixer.music.set_volume(0.2)
@@ -595,6 +624,12 @@ def main_menu():
             button.changeColor(menu_mouse_pos)
             button.update(screen)
 
+        # load new values into json file
+        with open("player_data/data.json", "w") as f:
+            player_data["coins"] = coins
+            player_data["attack_speed_lvl"] = attack_speed_lvl
+            json.dump(player_data, f, indent=4)
+
         for event in py.event.get():
             if event.type == py.QUIT:
                 py.quit()
@@ -603,12 +638,7 @@ def main_menu():
                 if PLAY_BUTTON.checkForInput(menu_mouse_pos):
                     play()
                 if SHOP_BUTTON.checkForInput(menu_mouse_pos):
-                    # load new values into json file
-                    with open("player_data/data.json", "w") as f:
-                        player_data["coins"] = coins
-                        player_data["attack_speed_lvl"] = attack_speed_lvl
-                        json.dump(player_data, f, indent=4)
-                    shop(coins, attack_speed_lvl)
+                   shop(coins, attack_speed_lvl, health_lvl)
                 if OPTIONS_BUTTON.checkForInput(menu_mouse_pos):
                     options()
                 if QUIT_BUTTON.checkForInput(menu_mouse_pos):
