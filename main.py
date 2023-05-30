@@ -57,7 +57,7 @@ class Enemy:
         self.health = 100
         self.alive = True
         self.fully_dead = False
-
+        self.last_hit = 0
         # idle animation
         self.idle_frame = 0
         self.idle_cooldown = 150
@@ -70,7 +70,7 @@ class Enemy:
 
         # hurt animation
         self.hurt_frame = 0
-        self.hurt_cooldown = 100
+        self.hurt_cooldown = 200
         self.hurt_last_update = py.time.get_ticks()
         self.hurt_frames = []
         enemy_hurt = py.image.load('PNG Sprites\\enemy_sprites\\Biker_hurt.png')
@@ -128,6 +128,20 @@ class Enemy:
             frame = py.transform.flip(self.death_frames[self.death_frame], True, False)
             screen.blit(frame, (self.x_pos - 48, self.y_pos))
 
+    def hurt_animation(self):
+        now = py.time.get_ticks()
+        self.last_hit = now
+        if now - self.hurt_last_update >= self.hurt_cooldown:
+            self.hurt_frame += 1
+            self.hurt_last_update = now
+            if self.hurt_frame >= len(self.hurt_frames):
+                self.hurt_frame = 0
+        if self.direction == "right":
+            frame = self.hurt_frames[self.hurt_frame]
+            screen.blit(frame, (self.x_pos, self.y_pos))
+        elif self.direction == "left":
+            frame = py.transform.flip(self.hurt_frames[self.hurt_frame], True, False)
+            screen.blit(frame, (self.x_pos - 48, self.y_pos))
 
 class Player:
     def __init__(self):
@@ -142,6 +156,7 @@ class Player:
         self.mask = None
         self.projectiles = []
         self.projectile_speed = 25
+        self.health = 100
 
         # run animation
         self.run_frame = 0
@@ -293,14 +308,18 @@ class Projectile:
         self.right_projectile_frame = self.projectile_frames[0]
         self.left_projectile_frame = py.transform.flip(self.projectile_frames[0], True, False)
         self.update()
-
+        self.mask = None
     def update(self):
         if self.direction == "right":
-            screen.blit(self.right_projectile_frame, (self.x_pos, self.y_pos))
+            frame = self.right_projectile_frame
+            self.mask = py.mask.from_surface(frame)
+            screen.blit(frame, (self.x_pos, self.y_pos))
             self.x_pos += self.projectile_speed
             print("lol")
         elif self.direction == "left":
-            screen.blit(self.left_projectile_frame, (self.x_pos - 284, self.y_pos))
+            frame = self.left_projectile_frame
+            self.mask = py.mask.from_surface(frame)
+            screen.blit(frame, (self.x_pos - 284, self.y_pos))
             self.x_pos -= self.projectile_speed
             print("bajs")
 
@@ -402,16 +421,19 @@ def play():
         elif not jumping and not attacking:
             player.idle()
 
-        # collision detection using masks
-        if player.direction == "right":
-            offset = (player.x_pos - enemy.x_pos + 48, player.y_pos - enemy.y_pos)
-        else:
-            offset = (player.x_pos - enemy.x_pos + 96, player.y_pos - enemy.y_pos)  # 144 is 3x the width of the player
-        if player.mask.overlap(enemy.mask, offset) and attacking:
-            enemy.hurt = True
-        else:
-            enemy.hurt = False
+        # projectile collision using masks
+        for projectile in player.projectiles:
+            if enemy.mask.overlap(projectile.mask, (int(projectile.x_pos - enemy.x_pos), int(projectile.y_pos - enemy.y_pos))):
+                enemy.health -= 1
+                if enemy.last_hit + 1000 < py.time.get_ticks():
+                    enemy.last_hit = py.time.get_ticks()
+                    enemy.hurt_animation()
+                player.projectiles.remove(projectile)
 
+        # player collision using masks
+        if enemy.mask.overlap(player.mask, (int(player.x_pos - enemy.x_pos), int(player.y_pos - enemy.y_pos))):
+            player.health -= 1
+            print(player.health)
         # text with enemy health
         enemy_health = get_font(30).render(f"Enemy Health: {enemy.health}", True, "Black")
         enemy_health_rect = enemy_health.get_rect(center=(640, 50))
@@ -655,3 +677,5 @@ def main_menu():
 
 if __name__ == '__main__':
     main_menu()
+
+
